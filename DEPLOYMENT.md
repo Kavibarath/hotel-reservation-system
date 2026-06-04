@@ -1,162 +1,199 @@
-# Deployment Guide — Railway
+# Deployment Guide — Free Tier (Render + Vercel + Aiven)
 
-Deploy the Aurelia Grand hotel reservation system to Railway in 3 services:
-1. **MySQL Database**
-2. **Spring Boot Backend**
-3. **React Frontend**
+Deploy the Aurelia Grand hotel reservation system using free services:
+1. **Aiven** — MySQL Database (1 month free trial)
+2. **Render** — Spring Boot Backend (free tier, 750 hrs/month)
+3. **Vercel** — React Frontend (free unlimited)
 
----
-
-## Prerequisites
-
-- GitHub repository pushed (✅ already done)
-- Railway account: https://railway.app (sign up with GitHub)
-- Railway gives you **$5/month free credit** — enough for this app
+**Total cost**: $0 for the first month
 
 ---
 
-## Step 1: Create Railway Project
+## Step 1: Set Up MySQL on Aiven
 
-1. Go to https://railway.app/new
-2. Click **Deploy from GitHub repo**
-3. Select **`Kavibarath/hotel-reservation-system`**
-4. Railway will auto-detect the project
+1. Sign up at https://aiven.io (use GitHub login)
+2. Click **Create Service** → **MySQL**
+3. Select **Free Plan** (1 month free trial)
+4. Choose cloud provider: **AWS** + region closest to you (e.g., `aws-us-east-1`)
+5. Service name: `hotel-mysql`
+6. Click **Create Service** (takes ~2 minutes)
+
+### Get Connection Details
+
+Once running:
+1. Click on your service → **Overview** tab
+2. Copy these values:
+   - **Host**: `mysql-xxxxx.aivencloud.com`
+   - **Port**: `12345` (something like this)
+   - **User**: `avnadmin`
+   - **Password**: (click eye icon to reveal)
+   - **Database**: `defaultdb`
+
+### Build Connection URL
+
+```
+jdbc:mysql://HOST:PORT/defaultdb?sslmode=require
+```
+
+Example:
+```
+jdbc:mysql://mysql-abc123.aivencloud.com:12345/defaultdb?sslmode=require
+```
 
 ---
 
-## Step 2: Add MySQL Database
+## Step 2: Deploy Backend on Render
 
-1. In your Railway project, click **+ New**
-2. Select **Database** → **Add MySQL**
-3. Railway provisions a MySQL instance automatically
-4. Click on the MySQL service → **Variables** tab
-5. Copy these values (you'll need them):
-   - `MYSQLHOST`
-   - `MYSQLPORT`
-   - `MYSQLDATABASE`
-   - `MYSQLUSER`
-   - `MYSQLPASSWORD`
+1. Sign up at https://render.com (use GitHub)
+2. Click **New +** → **Web Service**
+3. Connect GitHub repository: **`Kavibarath/hotel-reservation-system`**
+4. Configure:
+   - **Name**: `hotel-reservation-backend`
+   - **Region**: closest to you
+   - **Branch**: `main`
+   - **Runtime**: **Docker**
+   - **Instance Type**: **Free**
 
----
-
-## Step 3: Deploy Backend (Spring Boot)
-
-1. Click on the **backend service** (auto-created from repo)
-2. Go to **Settings** → set **Root Directory**: `/` (project root)
-3. Go to **Variables** tab and add:
+5. Add Environment Variables (click **Advanced**):
 
 ```
 PORT=8080
-SPRING_DATASOURCE_URL=jdbc:mysql://${{MySQL.MYSQLHOST}}:${{MySQL.MYSQLPORT}}/${{MySQL.MYSQLDATABASE}}
-SPRING_DATASOURCE_USERNAME=${{MySQL.MYSQLUSER}}
-SPRING_DATASOURCE_PASSWORD=${{MySQL.MYSQLPASSWORD}}
-JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters-required
+SPRING_DATASOURCE_URL=jdbc:mysql://mysql-xxxxx.aivencloud.com:12345/defaultdb?sslmode=require
+SPRING_DATASOURCE_USERNAME=avnadmin
+SPRING_DATASOURCE_PASSWORD=your-aiven-password-here
+JWT_SECRET=my-super-secret-jwt-key-min-32-chars-aurelia-grand-2026
 JWT_EXPIRATION=3600000
-CORS_ALLOWED_ORIGINS=https://YOUR-FRONTEND-DOMAIN.up.railway.app
 ```
 
-4. Click **Settings** → **Networking** → **Generate Domain**
-5. Copy the backend URL (e.g., `https://hotel-backend.up.railway.app`)
+6. Click **Create Web Service**
+7. Wait for build (~5-10 minutes for first deployment)
+8. Once deployed, copy your backend URL: `https://hotel-reservation-backend.onrender.com`
+
+> **Note**: Render free tier sleeps after 15 min idle. First request after sleep takes ~30 sec to wake up.
 
 ---
 
-## Step 4: Deploy Frontend (React)
+## Step 3: Deploy Frontend on Vercel
 
-1. In Railway, click **+ New** → **GitHub Repo** → select same repo
-2. Settings → **Root Directory**: `/frontend`
-3. Go to **Variables** tab:
+1. Sign up at https://vercel.com (use GitHub)
+2. Click **Add New** → **Project**
+3. Import repository: **`Kavibarath/hotel-reservation-system`**
+4. Configure:
+   - **Framework Preset**: **Vite**
+   - **Root Directory**: `frontend`
+   - **Build Command**: `npm run build` (auto-filled)
+   - **Output Directory**: `dist` (auto-filled)
+
+5. Add Environment Variable:
 
 ```
-VITE_API_URL=https://YOUR-BACKEND-DOMAIN.up.railway.app
-PORT=4173
+VITE_API_URL=https://hotel-reservation-backend.onrender.com
 ```
 
-4. Settings → **Networking** → **Generate Domain**
-5. Copy the frontend URL (e.g., `https://hotel-frontend.up.railway.app`)
+6. Click **Deploy**
+7. Wait ~2 minutes
+8. Your frontend is live at: `https://hotel-reservation-system.vercel.app`
 
 ---
 
-## Step 5: Update Backend CORS
+## Step 4: Initialize Database
 
-1. Go back to **backend service** → **Variables**
-2. Update `CORS_ALLOWED_ORIGINS` to your frontend URL:
+The first time backend starts, JPA creates tables automatically.
 
-```
-CORS_ALLOWED_ORIGINS=https://hotel-frontend.up.railway.app
-```
-
-3. Backend will auto-redeploy
-
----
-
-## Step 6: Initialize Database
-
-The first time Spring Boot starts, JPA will create tables automatically (`ddl-auto=update`).
-
-Default admin login (from DataSeeder):
+**Default Admin Login** (from DataSeeder):
 - **Email**: `admin@aurelia.com`
 - **Password**: `admin123`
 
 ---
 
-## ✅ Verify Deployment
+## ✅ Test Your Deployment
 
-1. Open your frontend URL: `https://your-frontend.up.railway.app`
-2. You should see the luxury hotel homepage
-3. Try registering a new user
-4. Browse rooms and make a booking
-5. Login as admin to test admin dashboard
+1. Open frontend URL: `https://hotel-reservation-system.vercel.app`
+2. Wait 30s for backend to wake up (first time only)
+3. Register a new user account
+4. Browse rooms, make a booking
+5. Login as admin to test dashboard
 
 ---
 
 ## 🔧 Troubleshooting
 
-**Backend fails to start**
-- Check logs: Railway → Backend service → **Deployments** → View Logs
-- Ensure all environment variables are set
-- Verify MySQL service is running
+**Backend won't start**
+- Check Render logs → Look for database connection errors
+- Verify all environment variables are set correctly
+- Ensure Aiven database is running
 
-**CORS errors in browser**
-- Ensure `CORS_ALLOWED_ORIGINS` matches exact frontend URL (no trailing slash)
-- Redeploy backend after updating CORS
+**CORS errors**
+- Backend's `SecurityConfig` already allows all origins via `setAllowedOriginPatterns(List.of("*"))`
+- If still failing, check browser console for actual error
 
 **Frontend shows blank page**
-- Check that `VITE_API_URL` is set correctly
-- Open browser console (F12) for errors
-- Verify build succeeded in deployment logs
+- Check Vercel deployment logs
+- Verify `VITE_API_URL` is set correctly (no trailing slash)
+- Open browser DevTools → Console for errors
+
+**"Backend sleeping" delay**
+- Render free tier sleeps after 15 min idle
+- First request takes ~30 sec to wake up
+- Solution: Upgrade to paid ($7/mo) OR use a cron service to ping every 14 min
 
 **Database connection failed**
-- Verify all 5 MySQL variables are correctly referenced with `${{MySQL.VAR}}` syntax
-- Check MySQL service is in same project
+- Verify Aiven service is in **RUNNING** state
+- Check the connection URL includes `?sslmode=require`
+- Ensure password is correct (no extra spaces)
 
 ---
 
-## 💰 Cost Estimate
+## 🆓 After Aiven Free Trial Expires
 
-| Service | Memory | Monthly Cost |
-|---------|--------|--------------|
-| Backend (512MB) | ~$2 |
-| Frontend (256MB) | ~$1 |
-| MySQL (512MB) | ~$2 |
-| **Total** | **~$5/month** |
+After 1 month, Aiven becomes paid. Switch to:
 
-Railway's **$5 free credit** typically covers this fully for small projects.
+**Option A**: Convert to PostgreSQL + Neon (free forever)
+- Free 0.5GB PostgreSQL database
+- Requires changing JPA dialect in code
 
----
+**Option B**: Use FreeSQLDatabase.com
+- Free MySQL with 5MB limit
+- Slower but free forever
 
-## 🎯 Custom Domain (Optional)
-
-1. Buy a domain (Namecheap, GoDaddy, etc.)
-2. Railway service → **Settings** → **Domains** → **Custom Domain**
-3. Add CNAME record at your DNS provider
-4. Railway provides SSL certificate automatically
+**Option C**: Pay Aiven (~$25/month) for production use
 
 ---
 
 ## 🔄 Continuous Deployment
 
-Every `git push origin main` automatically redeploys both services on Railway. No manual steps required!
+Every `git push origin main` automatically redeploys:
+- ✅ **Render** rebuilds and redeploys backend
+- ✅ **Vercel** rebuilds and redeploys frontend
+
+No manual steps required!
 
 ---
 
-**Made by Kavibarath**
+## 🎯 Custom Domain (Optional)
+
+### Vercel (Frontend)
+1. Vercel dashboard → Project → **Settings** → **Domains**
+2. Add your domain → follow DNS instructions
+3. Free SSL automatic
+
+### Render (Backend)
+1. Render dashboard → Service → **Settings** → **Custom Domain**
+2. Add subdomain (e.g., `api.yourdomain.com`)
+3. Update DNS records as shown
+
+---
+
+## 📊 Free Tier Limits
+
+| Service | Free Tier |
+|---------|-----------|
+| **Render Backend** | 750 hrs/month, 512MB RAM, sleeps after 15min |
+| **Vercel Frontend** | Unlimited bandwidth, 100GB transfer |
+| **Aiven MySQL** | 1 month free (then ~$25/mo) |
+
+---
+
+**Built by Kavibarath**
+
+Live site: Your deployed URLs will appear here once ready!
