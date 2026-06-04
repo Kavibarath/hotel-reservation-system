@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export async function api(path, options = {}) {
   const token = localStorage.getItem('hotelAuthToken');
@@ -8,7 +8,8 @@ export async function api(path, options = {}) {
     ...options.headers,
   };
 
-  const response = await fetch(`${path}`, { ...options, headers });
+  const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
+  const response = await fetch(url, { ...options, headers });
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
 

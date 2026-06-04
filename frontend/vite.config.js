@@ -9,4 +9,11 @@ export default defineConfig({
       '/api': 'http://localhost:8081',
     },
   },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+  },
+  preview: {
+    port: 4173,
+  },
 })
