@@ -1,0 +1,4 @@
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; }
+a, button, input, select { border-radius: 0; }
