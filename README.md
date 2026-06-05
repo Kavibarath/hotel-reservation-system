@@ -12,57 +12,6 @@ Aurelia Grand is a full-stack hotel management system that handles the complete 
 
 ---
 
-## Screenshots
-
-### Guest Experience
-
-#### Home Page
-![Home Page](docs/screenshots/home.png)
-*Luxury hero section with elegant five-star branding*
-
-#### Rooms & Suites
-![Rooms Page](docs/screenshots/rooms.png)
-*Browse rooms with detailed amenities and pricing*
-
-#### Booking Page
-![Booking Page](docs/screenshots/booking.png)
-*Real-time availability search and reservation booking*
-
-#### Login & Registration
-| Login | Register |
-|-------|----------|
-| ![Login](docs/screenshots/login.png) | ![Register](docs/screenshots/register.png) |
-
-#### My Reservations
-![My Reservations](docs/screenshots/my-reservations.png)
-*Track all your bookings with status indicators*
-
-#### Payment Processing
-![Payment](docs/screenshots/payment.png)
-*Secure payment flow with transaction confirmation*
-
-### Admin Dashboard
-
-#### Dashboard Overview
-![Admin Dashboard](docs/screenshots/admin-dashboard.png)
-*Real-time stats: revenue, reservations, occupancy*
-
-#### Reservations Management
-![Admin Reservations](docs/screenshots/admin-reservations.png)
-*Full reservation lifecycle management with check-in/out actions*
-
-#### Rooms Management
-![Rooms Management](docs/screenshots/admin-rooms.png)
-*CRUD operations for room inventory with maintenance toggle*
-
-#### Rate Plans
-![Rate Plans](docs/screenshots/admin-rate-plans.png)
-*Configure dynamic pricing and cancellation policies*
-
-> **Note**: Screenshots are stored in `docs/screenshots/`. See [screenshot guide](docs/screenshots/README.md) for naming conventions.
-
----
-
 ## Features
 
 ### Guest Features
